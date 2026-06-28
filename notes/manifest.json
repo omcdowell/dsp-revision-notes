@@ -1,0 +1,12 @@
+{
+  "title": "CS6004 — DSP Revision Notes",
+  "notes": [
+    { "title": "Exam Strategy & Structure", "file": "exam-strategy.md", "category": "Overview" },
+    { "title": "Signals, Systems & Convolution", "file": "signals-systems-convolution.md", "category": "Core Topics" },
+    { "title": "Fourier Series & Transforms", "file": "fourier.md", "category": "Core Topics" },
+    { "title": "Z-Transforms", "file": "z-transforms.md", "category": "Core Topics" },
+    { "title": "DFT, IDFT & FFT", "file": "dft-fft.md", "category": "Core Topics" },
+    { "title": "Filter Design (FIR / IIR)", "file": "filter-design.md", "category": "Core Topics" },
+    { "title": "Digital Image Processing", "file": "digital-image-processing.md", "category": "Core Topics" }
+  ]
+}
