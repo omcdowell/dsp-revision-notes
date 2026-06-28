@@ -260,6 +260,132 @@ body {
 .menu-toggle .bars::before { top: -6px; }
 .menu-toggle .bars::after { top: 6px; }
 
+/* ---------- Cram Plan timer ---------- */
+.nav-link-plan { font-weight: 600; }
+
+.plan { max-width: 900px; margin: 0 auto; }
+.plan-stage { text-align: center; }
+
+.plan-meta {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.3rem;
+}
+.plan-kicker {
+  font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim); font-weight: 700;
+}
+.plan-chip {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em;
+  padding: 0.16rem 0.5rem; border-radius: 99px; text-transform: uppercase;
+}
+.plan-chip-mock  { background: var(--accent-soft); color: var(--accent); }
+.plan-chip-extra { background: rgba(210, 153, 34, 0.16); color: #e3b341; }
+.plan-chip-drill { background: rgba(63, 185, 80, 0.16); color: #3fb950; }
+.plan-chip-break { background: rgba(210, 153, 34, 0.16); color: #e3b341; }
+.plan-notelink { font-size: 0.8rem; color: var(--accent); text-decoration: none; }
+.plan-notelink:hover { text-decoration: underline; }
+
+.plan-topic {
+  font-size: clamp(1.4rem, 3.2vw, 2.2rem); font-weight: 800;
+  color: var(--heading); line-height: 1.15; margin: 0.1rem 0 0.2rem;
+}
+.plan-clock {
+  font-variant-numeric: tabular-nums; font-weight: 800;
+  font-size: clamp(4.5rem, 16vw, 9.5rem); line-height: 0.95;
+  letter-spacing: -0.02em; color: var(--heading); margin: 0.4rem 0;
+}
+.plan-bar {
+  width: 100%; max-width: 640px; height: 9px; margin: 0 auto 1rem;
+  background: var(--bg-code); border-radius: 99px; overflow: hidden;
+}
+.plan-fill { height: 100%; width: 0%; background: var(--accent); transition: width 1s linear, background 0.3s; }
+
+/* danger state — last 2 min */
+.plan.danger .plan-fill { background: var(--error); }
+.plan.danger .plan-clock { color: var(--error); animation: planPulse 1s ease-in-out infinite; }
+@keyframes planPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+/* break tint */
+.plan.is-break .plan-fill { background: #e3b341; }
+
+.plan-ctl { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1.2rem; }
+.plan-btn {
+  font: inherit; font-weight: 700; font-size: 0.9rem; color: var(--text);
+  background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.55rem 0.9rem; cursor: pointer; transition: border-color 0.12s;
+}
+.plan-btn:hover { border-color: var(--accent); }
+.plan-btn-primary { background: var(--accent); color: #04101f; border-color: var(--accent); font-size: 1.05rem; padding: 0.8rem 1.6rem; margin-top: 0.6rem; }
+
+.plan-intro { color: var(--text-dim); font-size: 1rem; max-width: 640px; margin: 0 auto 1.2rem; }
+
+/* tasks — left-aligned cards */
+.plan-tasks { text-align: left; max-width: 720px; margin: 0 auto; }
+.plan-tasklist { list-style: none; margin: 0; padding: 0; counter-reset: ptask; }
+.plan-task {
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: 12px;
+  padding: 0.9rem 1.1rem; margin-bottom: 0.8rem;
+}
+.plan-task.done { opacity: 0.55; }
+.plan-task-head { display: flex; gap: 0.6rem; align-items: baseline; cursor: pointer; font-weight: 600; color: var(--heading); }
+.plan-task-head input { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--accent); flex: none; }
+.plan-task.done .plan-task-do { text-decoration: line-through; color: var(--text-dim); }
+.plan-task-do::before { counter-increment: ptask; content: counter(ptask) ". "; color: var(--accent); font-weight: 800; }
+.plan-task-detail { margin: 0.5rem 0 0 1.65rem; color: var(--text); font-size: 0.95rem; }
+.plan-task-detail p { margin: 0.4rem 0; }
+.plan-task-check { margin: 0.5rem 0 0 1.65rem; }
+.plan-task-check summary {
+  cursor: pointer; color: var(--accent); font-size: 0.85rem; font-weight: 600;
+  list-style: none; display: inline-block; padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border); border-radius: 6px;
+}
+.plan-task-check[open] summary { margin-bottom: 0.4rem; }
+.plan-task-check > :not(summary) { background: var(--bg-code); border-radius: 8px; padding: 0.2rem 0.8rem; }
+
+.plan-breaklist { color: var(--text-dim); }
+
+.plan-formulas {
+  margin: 1rem auto 0; max-width: 720px; background: var(--bg-code);
+  border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 1rem; text-align: left;
+}
+.plan-formulas-h { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; margin-bottom: 0.3rem; }
+.plan-formulas ul { margin: 0; padding-left: 1.2rem; }
+.plan-formulas li { margin: 0.25rem 0; font-size: 0.92rem; }
+
+.plan-donewhen { max-width: 720px; margin: 0.9rem auto 0; text-align: left; color: var(--text-dim); font-size: 0.92rem; }
+.plan-donewhen b { color: var(--heading); }
+
+.plan-next { margin-top: 1.4rem; color: var(--text-dim); font-size: 0.95rem; }
+.plan-next b { color: var(--text); }
+
+/* full schedule */
+.plan-schedule { max-width: 720px; margin: 1.6rem auto 0; text-align: left; }
+.plan-schedule > summary {
+  cursor: pointer; color: var(--text-dim); font-size: 0.82rem; font-weight: 600;
+  padding: 0.4rem 0; border-top: 1px solid var(--border);
+}
+.plan-rows { margin-top: 0.4rem; }
+.plan-row {
+  display: flex; gap: 0.7rem; align-items: baseline; padding: 0.4rem 0.5rem;
+  border-radius: 7px; text-decoration: none; color: var(--text); font-size: 0.86rem; cursor: pointer;
+}
+.plan-row:hover { background: var(--bg-code); }
+.plan-row-t { width: 3.2rem; flex: none; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.plan-row-n { flex: 1; }
+.plan-row-d { flex: none; color: var(--text-dim); font-size: 0.78rem; }
+.plan-row.brk .plan-row-n { color: var(--text-dim); }
+.plan-row.past { opacity: 0.45; }
+.plan-row.cur { background: var(--accent-soft); }
+.plan-row.cur .plan-row-n { color: var(--accent); font-weight: 700; }
+
+/* start / done */
+.plan-start { text-align: center; max-width: 680px; margin: 1rem auto; }
+.plan-lede { color: var(--text); font-size: 1.05rem; line-height: 1.6; margin: 0.8rem 0; }
+.plan-sub { color: var(--text-dim); font-size: 0.9rem; }
+.plan-sub kbd, .plan-start kbd {
+  background: var(--bg-code); border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.05rem 0.35rem; font-size: 0.8rem; font-family: inherit;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 800px) {
   .menu-toggle { display: inline-flex; }
@@ -278,4 +404,7 @@ body {
     margin-left: 0;
     padding: 3.8rem 1.1rem 5rem;
   }
+
+  .plan-clock { font-size: clamp(4rem, 26vw, 8rem); }
+  .plan-task-detail, .plan-task-check { margin-left: 0; }
 }
