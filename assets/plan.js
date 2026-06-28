@@ -5,6 +5,13 @@ import texmath from 'https://esm.sh/markdown-it-texmath@1';
 import katex from 'https://esm.sh/katex@0.16';
 import { PLAN } from './plan-data.js';
 
+// Notes that carry an interactive widget — the plan deep-links to `#<note>::demo`
+// to jump straight to the animation (see scrollToAnchor in app.js).
+const WIDGET_NOTES = new Set([
+  'signals-systems-convolution.md', 'fourier.md', 'z-transforms.md',
+  'dft-fft.md', 'filter-design.md', 'digital-image-processing.md',
+]);
+
 const md = markdownit({ html: false, linkify: true, typographer: false })
   .use(texmath, { engine: katex, delimiters: 'dollars', katexOptions: { throwOnError: false, strict: false } });
 
@@ -106,6 +113,7 @@ function render() {
       <div class="plan-meta">
         ${isBreak ? '<span class="plan-chip plan-chip-break">BREAK</span>' : `<span class="plan-kicker">BLOCK ${studyIndexOf(S.idx)} / ${studyCount}</span> ${tagChip(b.tag)}`}
         ${b.note ? `<a class="plan-notelink" href="#${encodeURIComponent(b.note)}" target="_blank" rel="noopener">Open note ↗</a>` : ''}
+        ${b.note && WIDGET_NOTES.has(b.note) ? `<a class="plan-notelink plan-demolink" href="#${encodeURIComponent(b.note)}::demo" target="_blank" rel="noopener">🎬 Interactive demo ↗</a>` : ''}
       </div>
       <h1 class="plan-topic">${escapeHtml(b.topic)}</h1>
       <div class="plan-clock" id="plan-clock">${fmt(S.remaining)}</div>

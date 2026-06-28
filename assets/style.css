@@ -224,6 +224,90 @@ body {
 }
 .note mjx-container svg { max-width: 100%; }
 
+/* ---------- Interactive widgets ---------- */
+.widget {
+  margin: 1.6rem 0;
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.widget-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--heading);
+  margin-bottom: 0.7rem;
+}
+.widget-stage {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.widget-canvas { display: block; width: 100%; }
+
+.widget-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.1rem;
+  margin-top: 0.8rem;
+}
+.widget-ctl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.widget-ctl-label { white-space: nowrap; }
+.widget-ctl-val {
+  min-width: 3.2rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.widget-ctl-toggle { cursor: pointer; }
+.widget-ctl-toggle input { accent-color: var(--accent); width: 1rem; height: 1rem; }
+
+.widget-range { accent-color: var(--accent); cursor: pointer; vertical-align: middle; }
+.widget-select {
+  background: var(--bg-code);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  font-size: 0.82rem;
+}
+.widget-btn {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.widget-btn:hover { border-color: var(--accent); }
+
+.widget-caption {
+  margin-top: 0.7rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.widget-err {
+  padding: 0.8rem 1rem;
+  color: var(--error);
+  font-size: 0.88rem;
+}
+.widget-err code { color: var(--error); }
+
 /* ---------- Mobile toggle ---------- */
 .menu-toggle {
   display: none;
@@ -284,6 +368,7 @@ body {
 .plan-chip-break { background: rgba(210, 153, 34, 0.16); color: #e3b341; }
 .plan-notelink { font-size: 0.8rem; color: var(--accent); text-decoration: none; }
 .plan-notelink:hover { text-decoration: underline; }
+.plan-demolink { color: #e3b341; }
 
 .plan-topic {
   font-size: clamp(1.4rem, 3.2vw, 2.2rem); font-weight: 800;
