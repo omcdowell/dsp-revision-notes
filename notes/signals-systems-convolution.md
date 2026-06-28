@@ -35,6 +35,10 @@ $$y(t) = \int_{-\infty}^{\infty} x(\tau)\,h(t-\tau)\,d\tau, \qquad y(n) = \sum_{
 
 **Steps (discrete):** fold $h(k)\to h(-k)$, shift by $n$, multiply pointwise, sum; repeat for each $n$.
 
+```widget
+convolution
+```
+
 - **Output length:** $L_x + L_h - 1$.
 - **Properties:** commutative $x*h = h*x$; associative; distributive $x*(h_1+h_2)$; identity $x*\delta = x$.
 - Useful GP sum: $\displaystyle\sum_{n=0}^{N-1} a^n = \frac{1 - a^N}{1 - a}$.

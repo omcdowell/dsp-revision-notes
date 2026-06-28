@@ -18,6 +18,10 @@
 
 - Neighbourhood averaging via **convolution** (e.g. Gaussian blur with parameter $\sigma$); larger $\sigma$ = more smoothing. Process colour channels separately, then recombine.
 
+```widget
+image-kernel
+```
+
 ## Transforms & colour
 
 - **2-D DWT** (multiresolution): low-pass (approximation / shape) + high-pass (edges / texture), downsampled into 4 subbands: **LL, LH, HL, HH**.

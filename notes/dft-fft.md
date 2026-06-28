@@ -11,6 +11,10 @@ with the **twiddle factor** $W_N = e^{-j2\pi/N}$ (an $N$-th root of unity).
 - The DFT = $N$ equally-spaced samples of the DTFT on the unit circle = Z-transform at $z = e^{j2\pi k/N}$.
 - 2-sample $\{A, B\} \to \{A+B,\ A-B\}$.
 
+```widget
+dft-spectrum
+```
+
 ## Matrix method
 
 $$\mathbf{X} = \mathbf{W}_N\,\mathbf{x},$$

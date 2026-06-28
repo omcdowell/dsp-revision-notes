@@ -22,6 +22,10 @@ Rational form $X(z) = \dfrac{N(z)}{D(z)}$: **zeros** = roots of $N(z)$, **poles*
 - **Causal** $\iff$ ROC is the **exterior** of the outermost pole (includes $z=\infty$).
 - **Causal *and* stable** $\iff$ all poles lie **inside** the unit circle.
 
+```widget
+pole-zero
+```
+
 ## Properties
 
 | Property | Result |

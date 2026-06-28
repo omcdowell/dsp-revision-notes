@@ -11,6 +11,10 @@ $$\text{Synthesis: } x(t) = \sum_{k=-\infty}^{\infty} X_k\, e^{jk\omega_0 t}, \q
 - Method: expand $x(t)$ into complex exponentials with Euler, then read off $X_k$.
 - Through an LTI system: $Y_k = X_k\,H(jk\omega_0)$.
 
+```widget
+fourier-series
+```
+
 ## CTFT — Continuous-Time Fourier Transform (aperiodic)
 
 $$X(j\omega) = \int_{-\infty}^{\infty} x(t)\,e^{-j\omega t}\,dt, \qquad x(t) = \frac{1}{2\pi}\int_{-\infty}^{\infty} X(j\omega)\,e^{j\omega t}\,d\omega.$$

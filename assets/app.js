@@ -2,6 +2,7 @@ import markdownit from 'https://esm.sh/markdown-it@14';
 import texmath from 'https://esm.sh/markdown-it-texmath@1';
 import katex from 'https://esm.sh/katex@0.16';
 import { mountPlan } from './plan.js';
+import { mountWidgets, destroyWidgets } from './widgets.js';
 
 const md = markdownit({ html: false, linkify: true, typographer: false })
   .use(texmath, {
@@ -104,12 +105,20 @@ function buildNav(list) {
 }
 
 // --- Routing ----------------------------------------------------------------
+// Hash is `#<file>` or `#<file>::<anchor>` (the latter deep-links to e.g. a
+// widget — the cram plan uses `#<file>::demo` to jump straight to the demo).
+function parseHash() {
+  const raw = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+  const i = raw.indexOf('::');
+  if (i === -1) return { file: raw, anchor: '' };
+  return { file: raw.slice(0, i), anchor: raw.slice(i + 2) };
+}
 function currentFile() {
-  const hash = decodeURIComponent(window.location.hash.replace(/^#/, ''));
-  return hash || (notes[0] && notes[0].file) || '';
+  return parseHash().file || (notes[0] && notes[0].file) || '';
 }
 
 async function route() {
+  destroyWidgets();
   const file = currentFile();
   if (!file) {
     contentEl.innerHTML = '<div class="error">No notes available.</div>';
@@ -133,9 +142,22 @@ async function loadNote(file) {
     contentEl.innerHTML = `<article class="note">${md.render(text)}</article>`;
     contentEl.scrollTop = 0;
     window.scrollTo(0, 0);
+    await mountWidgets(contentEl);
+    scrollToAnchor();
   } catch (err) {
     contentEl.innerHTML = `<div class="error">Could not load note: <code>${escapeHtml(file)}</code><br /><small>${escapeHtml(String(err))}</small></div>`;
   }
+}
+
+// Honour a `::anchor` deep-link. `demo` is special — it scrolls to the first
+// interactive widget on the page regardless of its id.
+function scrollToAnchor() {
+  const { anchor } = parseHash();
+  if (!anchor) return;
+  const el = anchor === 'demo'
+    ? contentEl.querySelector('.widget')
+    : document.getElementById(anchor);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function setActive(file) {

@@ -17,6 +17,10 @@ $$h(n) = h_d(n)\,w(n).$$
 - **Hanning:** $0.5 - 0.5\cos(\cdot)$;  **Blackman:** adds a $0.08\cos\!\big(\tfrac{4\pi n}{N-1}\big)$ term.
 - Ideal LPF coefficients: $h_d(n) = \dfrac{\sin\big(\omega_c(n-\alpha)\big)}{\pi(n-\alpha)}$, with $h_d(\alpha) = \omega_c/\pi$.
 
+```widget
+filter-response
+```
+
 ## IIR — Butterworth (maximally flat)
 
 $$|H(\Omega)|^2 = \frac{1}{1 + (\Omega/\Omega_c)^{2N}}.$$
