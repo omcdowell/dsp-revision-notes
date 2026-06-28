@@ -1,6 +1,7 @@
 import markdownit from 'https://esm.sh/markdown-it@14';
 import texmath from 'https://esm.sh/markdown-it-texmath@1';
 import katex from 'https://esm.sh/katex@0.16';
+import { mountPlan } from './plan.js';
 
 const md = markdownit({ html: false, linkify: true, typographer: false })
   .use(texmath, {
@@ -39,6 +40,29 @@ async function init() {
 
 function buildNav(list) {
   navEl.innerHTML = '';
+
+  // Pinned: the in-app cram timer (special #plan route, not a markdown note).
+  const planGroup = document.createElement('div');
+  planGroup.className = 'nav-group';
+  const planHeading = document.createElement('h2');
+  planHeading.className = 'nav-group-title';
+  planHeading.textContent = 'Cram';
+  planGroup.appendChild(planHeading);
+  const planUl = document.createElement('ul');
+  planUl.className = 'nav-list';
+  const planLi = document.createElement('li');
+  const planA = document.createElement('a');
+  planA.className = 'nav-link nav-link-plan';
+  planA.href = '#plan';
+  planA.textContent = '🕒 Tonight’s Cram Plan';
+  planA.dataset.file = 'plan';
+  planA.dataset.title = 'tonight cram plan timer';
+  planA.addEventListener('click', () => closeMobileNav());
+  planLi.appendChild(planA);
+  planUl.appendChild(planLi);
+  planGroup.appendChild(planUl);
+  navEl.appendChild(planGroup);
+
   // Preserve category order as first seen in the manifest.
   const categories = [];
   const groups = new Map();
@@ -92,6 +116,11 @@ async function route() {
     return;
   }
   setActive(file);
+  if (file === 'plan') {
+    contentEl.innerHTML = '';
+    mountPlan(contentEl);
+    return;
+  }
   await loadNote(file);
 }
 
