@@ -25,6 +25,27 @@ let root = null;            // mounted container
 function fmt(s) { s = Math.max(0, s); const m = Math.floor(s / 60), r = s % 60; return `${m}:${String(r).padStart(2, '0')}`; }
 function studyIndexOf(i) { return PLAN.slice(0, i + 1).filter(b => b.type !== 'break').length; }
 
+// Seconds left in the whole plan from this moment: current block's remaining + all later blocks.
+function remainingSeconds() {
+  if (!S.started) return PLAN.reduce((a, b) => a + b.min, 0) * 60;
+  if (S.idx >= PLAN.length) return 0;
+  return S.remaining + PLAN.slice(S.idx + 1).reduce((a, b) => a + b.min * 60, 0);
+}
+function fmtDur(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+function clockAt(sec) {
+  return new Date(Date.now() + Math.max(0, sec) * 1000)
+    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+// The live "time left · done ~HH:MM" tail of the schedule summary.
+function etaHtml() {
+  const rem = remainingSeconds();
+  return rem > 0 ? ` · <b>${fmtDur(rem)} left</b> · done ~${clockAt(rem)}` : ' · done ✓';
+}
+
 // --- Beep (WebAudio, no asset) ----------------------------------------------
 let actx = null;
 function beep(times) {
@@ -48,7 +69,8 @@ function beep(times) {
 function startTicker() {
   if (ticker) return;
   ticker = setInterval(() => {
-    if (S.paused || !S.started) return;
+    if (!S.started) return;
+    if (S.paused) { paintEta(); return; }   // countdown frozen, but the projected finish slips later
     S.remaining--;
     const b = PLAN[S.idx];
     if (S.remaining === 120 && b.type !== 'break') beep(2);
@@ -139,7 +161,7 @@ function renderSchedule() {
   }).join('');
   const totalStudy = PLAN.filter(b => b.type !== 'break').reduce((a, b) => a + b.min, 0);
   const total = PLAN.reduce((a, b) => a + b.min, 0);
-  return `<details class="plan-schedule"><summary>Full plan · ${studyCount} blocks · ${totalStudy}m study · ~${(total / 60).toFixed(1)}h</summary><div class="plan-rows">${rows}</div></details>`;
+  return `<details class="plan-schedule"><summary>Full plan · ${studyCount} blocks · ${totalStudy}m study · ~${(total / 60).toFixed(1)}h<span id="plan-eta">${etaHtml()}</span></summary><div class="plan-rows">${rows}</div></details>`;
 }
 
 function renderStart() {
@@ -169,7 +191,13 @@ function renderDone() {
   document.title = 'Done ✓ — DSP Cram';
 }
 
+function paintEta() {
+  const eta = root && root.querySelector('#plan-eta');
+  if (eta) eta.innerHTML = etaHtml();
+}
+
 function paintClock() {
+  paintEta();
   const c = root && root.querySelector('#plan-clock');
   if (!c) return;
   const b = PLAN[S.idx];
