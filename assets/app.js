@@ -1,7 +1,13 @@
 import markdownit from 'https://esm.sh/markdown-it@14';
-import mathjax3 from 'https://esm.sh/markdown-it-mathjax3@4';
+import texmath from 'https://esm.sh/markdown-it-texmath@1';
+import katex from 'https://esm.sh/katex@0.16';
 
-const md = markdownit({ html: false, linkify: true, typographer: false }).use(mathjax3);
+const md = markdownit({ html: false, linkify: true, typographer: false })
+  .use(texmath, {
+    engine: katex,
+    delimiters: 'dollars',
+    katexOptions: { throwOnError: false, strict: false }
+  });
 
 const sidebarTitle = document.getElementById('site-title');
 const navEl = document.getElementById('nav');
