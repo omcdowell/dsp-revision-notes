@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSP Cram Timer</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --line:#30363d; --txt:#e6edf3;
+    --mut:#8b949e; --accent:#58a6ff; --study:#3fb950; --break:#d29922;
+    --danger:#f85149;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+  #stage{flex:1; display:flex; min-height:0;}
+  #main{
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:24px; text-align:center; position:relative;
+    transition:background .4s;
+  }
+  #kicker{font-size:14px; letter-spacing:.18em; text-transform:uppercase; color:var(--mut);}
+  #topic{font-size:clamp(24px,4.2vw,52px); font-weight:800; margin:.2em 0 .1em; line-height:1.1; max-width:18ch;}
+  #clock{
+    font-variant-numeric:tabular-nums; font-weight:800;
+    font-size:clamp(96px,22vw,300px); line-height:.95; margin:8px 0;
+    letter-spacing:-.02em;
+  }
+  #bar{width:min(90%,900px); height:10px; background:#222a35; border-radius:99px; overflow:hidden;}
+  #fill{height:100%; width:0%; background:var(--study); transition:width 1s linear, background .4s;}
+  #task{
+    margin-top:22px; max-width:760px; text-align:left; background:var(--panel);
+    border:1px solid var(--line); border-radius:14px; padding:18px 22px;
+  }
+  #task h3{margin:0 0 8px; font-size:15px; color:var(--accent); letter-spacing:.04em; text-transform:uppercase;}
+  #task ul{margin:0; padding-left:20px;}
+  #task li{margin:5px 0; font-size:16px; line-height:1.45;}
+  #nextup{margin-top:14px; color:var(--mut); font-size:15px;}
+  #nextup b{color:var(--txt);}
+  /* danger state */
+  body.danger #fill{background:var(--danger);}
+  body.danger #clock{color:var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  body.danger #clock{animation:pulse 1s ease-in-out infinite;}
+  /* break state */
+  body.brk #main{background:#1b1505;}
+  body.brk #fill{background:var(--break);}
+  /* controls */
+  #ctl{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; padding:14px; border-top:1px solid var(--line); background:var(--panel);}
+  button{
+    font:inherit; font-weight:700; font-size:15px; color:var(--txt);
+    background:#21262d; border:1px solid var(--line); border-radius:10px;
+    padding:11px 18px; cursor:pointer;
+  }
+  button:hover{border-color:var(--accent);}
+  button.primary{background:var(--accent); color:#04101f; border-color:var(--accent);}
+  button.danger{background:var(--danger); color:#1a0303; border-color:var(--danger);}
+  /* sidebar schedule */
+  #side{width:320px; border-left:1px solid var(--line); background:var(--panel); overflow-y:auto; padding:14px;}
+  #side h2{font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--mut); margin:4px 6px 12px;}
+  .row{display:flex; gap:10px; padding:9px 8px; border-radius:9px; font-size:14px; align-items:baseline;}
+  .row .t{width:46px; color:var(--mut); font-variant-numeric:tabular-nums; flex:none;}
+  .row .n{flex:1;}
+  .row .d{color:var(--mut); font-size:12px; flex:none;}
+  .row.done{opacity:.4;}
+  .row.cur{background:#0d2c14; outline:1px solid var(--study);}
+  .row.cur.brk{background:#2c2205; outline-color:var(--break);}
+  .row.study .dot,.row.brk .dot{display:inline-block; width:8px; height:8px; border-radius:99px; background:var(--study); margin-right:2px;}
+  .row.brk .dot{background:var(--break);}
+  #total{padding:10px 8px; color:var(--mut); font-size:12px; border-top:1px solid var(--line); margin-top:8px;}
+  #start-overlay{
+    position:fixed; inset:0; background:rgba(13,17,23,.96); z-index:9;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;
+  }
+  #start-overlay h1{font-size:clamp(28px,5vw,48px); margin:.1em;}
+  #start-overlay p{color:var(--mut); max-width:560px; line-height:1.5; font-size:17px;}
+  .hide{display:none !important;}
+  @media (max-width:760px){ #side{display:none;} }
+</style>
+</head>
+<body>
+  <div id="start-overlay">
+    <div id="kicker">CS6004 · Digital Signal Processing</div>
+    <h1>Overnight Cram Timer</h1>
+    <p>Interleaved mock drills + extra topics. Short sharp stints, auto-advancing. Each block tells you exactly what to do — don't think, just start. It beeps and flashes red in the last 2&nbsp;min.</p>
+    <p style="font-size:14px">Keep this tab visible — the title bar shows the countdown too. Use <b>Pause</b> for real breaks, <b>Skip</b> if a block's done early, <b>+5</b> if you're mid-flow.</p>
+    <button class="primary" style="font-size:20px;padding:16px 34px;margin-top:18px" onclick="begin()">▶ Start the night</button>
+  </div>
+
+  <div id="stage">
+    <div id="main">
+      <div id="kicker">BLOCK <span id="idx">1</span> / <span id="cnt">0</span></div>
+      <div id="topic">—</div>
+      <div id="clock">25:00</div>
+      <div id="bar"><div id="fill"></div></div>
+      <div id="task"><h3>Do this now</h3><ul id="tasklist"></ul></div>
+      <div id="nextup">Next up: <b id="next">—</b></div>
+    </div>
+    <div id="side">
+      <h2>Tonight's plan</h2>
+      <div id="rows"></div>
+      <div id="total"></div>
+    </div>
+  </div>
+
+  <div id="ctl">
+    <button id="pausebtn" onclick="togglePause()">⏸ Pause</button>
+    <button onclick="addTime(5)">+5 min</button>
+    <button onclick="skip()">⏭ Skip block</button>
+    <button onclick="restart()">↺ Restart night</button>
+    <button class="danger" onclick="muteToggle()" id="mutebtn">🔊 Sound on</button>
+  </div>
+
+<script>
+// ---- THE SCHEDULE -------------------------------------------------------
+// type: 'study' | 'break'. min: minutes. Interleaved mock(M) + extra(E).
+const PLAN = [
+  {type:'study', min:25, topic:'Q1 · System Properties', tag:'MOCK', task:[
+    'Classify 4–5 systems: linear? time-invariant? causal? stable? memoryless?',
+    'Say the TEST for each property out loud before answering.',
+    'Linearity = homogeneity + additivity. Stability = bounded-in→bounded-out.']},
+  {type:'break', min:5, topic:'Break', task:['Stand up. Water. No phone rabbit-holes.']},
+
+  {type:'study', min:20, topic:'Fourier Series (extra)', tag:'EXTRA', task:[
+    'CTFS analysis + synthesis equations.',
+    'Find a_k for a periodic square wave.',
+    'Note how CTFS relates to CTFT (line spectrum → continuous).']},
+  {type:'break', min:5, topic:'Break', task:['Look out a window. Roll shoulders.']},
+
+  {type:'study', min:25, topic:'Q2 · Z-transform + ROC + DTFT', tag:'MOCK', task:[
+    'Find X(z) + ROC for a right-sided and a left-sided sequence.',
+    'Inverse Z by partial fractions. ROC rule: causal ⇒ outside outermost pole.',
+    'Then get DTFT by setting z = e^{jω} (only valid if ROC includes unit circle).']},
+  {type:'break', min:5, topic:'Break', task:['Move. Don’t sit.']},
+
+  {type:'study', min:20, topic:'DFT properties + circular conv (extra)', tag:'EXTRA', task:[
+    'DFT pair, periodicity, circular shift.',
+    'Circular convolution via the matrix / tabular method.',
+    'Contrast circular vs linear convolution + when zero-padding makes them equal.']},
+  {type:'break', min:5, topic:'Break', task:['Quick snack. Hydrate.']},
+
+  {type:'study', min:25, topic:'Q3 · CTFT + graphical convolution', tag:'MOCK', task:[
+    'Graphical convolution: flip → shift → multiply → integrate.',
+    'Do ONE piecewise example fully, tracking the limits per region.',
+    'CTFT of common signals (rect, exp, impulse) — know the pairs.']},
+  {type:'break', min:5, topic:'Break', task:['Eyes off screen for the full 5.']},
+
+  {type:'study', min:20, topic:'FIR design + Hamming window (extra)', tag:'EXTRA', task:[
+    'FIR by windowing: ideal h_d[n] (sinc) → truncate → apply window.',
+    'Hamming: w[n] = 0.54 − 0.46·cos(2πn/(N−1)). Know Hanning too.',
+    'Why windows? Gibbs phenomenon / sidelobe vs main-lobe trade-off.']},
+  {type:'break', min:15, topic:'Long break — eat / rest', task:[
+    '15 minutes. Real food. Lie down if you need it.',
+    'Do NOT start scrolling — set this tab to come back to.']},
+
+  {type:'study', min:25, topic:'Q4 · Butterworth LPF via bilinear', tag:'MOCK', task:[
+    'Full chain: spec → prewarp Ω = (2/T)tan(ω/2) → analog Butterworth H(s) → bilinear → H(z).',
+    'Order N from the attenuation spec; cutoff Ω_c.',
+    'This is a 20-mark engine. Drill the steps until automatic.']},
+  {type:'break', min:5, topic:'Break', task:['Stretch. Shake it out.']},
+
+  {type:'study', min:20, topic:'Chebyshev filters (extra)', tag:'EXTRA', task:[
+    'Type I: equiripple passband. Ripple param ε, order formula.',
+    'vs Butterworth: sharper roll-off for same order, cost = passband ripple.',
+    'Poles lie on an ellipse (Butterworth = circle).']},
+  {type:'break', min:5, topic:'Break', task:['Water. Look far away.']},
+
+  {type:'study', min:25, topic:'Q5 · DIT-FFT + IDFT by matrix', tag:'MOCK', task:[
+    '8-point DIT-FFT: bit-reversed input, 3 butterfly stages, twiddles W_N^k.',
+    'DRAW the flow graph from memory.',
+    'IDFT by matrix: x = (1/N)·W*·X (conjugate the DFT matrix).']},
+  {type:'break', min:5, topic:'Break', task:['Stand, breathe, reset.']},
+
+  {type:'study', min:20, topic:'Digital Image Processing (extra)', tag:'EXTRA', task:[
+    'RGB→YIQ matrix (it’s on the formula sheet — practise applying it).',
+    'Sampling + quantization, histogram, basic spatial filters/masks.',
+    'Cover whatever DIP appears on the sheet — mock skipped this entirely.']},
+  {type:'break', min:10, topic:'Break before speed round', task:['10 min. Then it’s timed, no-notes redos.']},
+
+  {type:'study', min:20, topic:'SPEED · Z-transform redo', tag:'DRILL', task:[
+    'Timed Q2-type from scratch, NO notes. Aim ≤18 min.',
+    'If you stall, mark it and review after — don’t peek.']},
+  {type:'break', min:5, topic:'Break', task:['Move.']},
+
+  {type:'study', min:20, topic:'SPEED · Butterworth redo', tag:'DRILL', task:[
+    'Timed Q4 bilinear from scratch, NO notes. ≤18 min.',
+    'Whole chain end-to-end without prompts.']},
+  {type:'break', min:5, topic:'Break', task:['Water. Breathe.']},
+
+  {type:'study', min:20, topic:'SPEED · FFT + IDFT redo', tag:'DRILL', task:[
+    'Timed Q5 flow graph + IDFT matrix, NO notes. ≤18 min.',
+    'Draw the butterflies clean.']},
+  {type:'break', min:5, topic:'Break', task:['Last stretch coming.']},
+
+  {type:'study', min:25, topic:'FLEX · Your weakest area', tag:'DRILL', task:[
+    'Hit whatever felt worst tonight — be honest.',
+    'Or attempt a full mock question under exam time.',
+    'Then sleep. Tired-but-rested beats wired-and-fried.']},
+];
+// ------------------------------------------------------------------------
+
+const $ = s => document.querySelector(s);
+let i = 0, remaining = 0, timer = null, paused = false, muted = false, started = false;
+
+function fmt(s){const m=Math.floor(s/60),r=s%60;return `${m}:${String(r).padStart(2,'0')}`;}
+
+function buildSidebar(){
+  const rows = $('#rows'); rows.innerHTML='';
+  let acc=0, totalStudy=0, total=0;
+  PLAN.forEach((b,n)=>{
+    total+=b.min; if(b.type==='study') totalStudy+=b.min;
+    const r=document.createElement('div');
+    r.className=`row ${b.type==='break'?'brk':'study'}`;
+    r.id=`row${n}`;
+    const clock = `+${Math.floor(acc/60)}:${String(acc%60).padStart(2,'0')}`;
+    r.innerHTML=`<span class="t">${clock}</span><span class="n"><span class="dot"></span>${b.topic}</span><span class="d">${b.min}m</span>`;
+    rows.appendChild(r); acc+=b.min*60;
+  });
+  $('#total').textContent=`${PLAN.length} blocks · ${totalStudy} min study · ${total} min total (~${(total/60).toFixed(1)} h)`;
+  $('#cnt').textContent=PLAN.filter(b=>b.type==='study').length;
+}
+
+function load(n){
+  i=n;
+  const b=PLAN[i];
+  remaining=b.min*60;
+  $('#topic').textContent=b.topic;
+  $('#tasklist').innerHTML=b.task.map(t=>`<li>${t}</li>`).join('');
+  $('#task h3').textContent = b.type==='break' ? 'Break' : 'Do this now';
+  const nb=PLAN[i+1];
+  $('#next').textContent = nb ? nb.topic : '🎉 Done — sleep.';
+  // study-block index (count studies up to here)
+  $('#idx').textContent = PLAN.slice(0,i+1).filter(x=>x.type==='study').length || '–';
+  document.body.classList.toggle('brk', b.type==='break');
+  document.body.classList.remove('danger');
+  // sidebar state
+  PLAN.forEach((_,n)=>{
+    const r=$(`#row${n}`);
+    r.classList.toggle('done', n<i);
+    r.classList.toggle('cur', n===i);
+    r.classList.toggle('brk', PLAN[n].type==='break');
+  });
+  $(`#row${i}`)?.scrollIntoView({block:'center',behavior:'smooth'});
+  render();
+}
+
+function render(){
+  $('#clock').textContent=fmt(remaining);
+  const b=PLAN[i];
+  const pct=100*(1-remaining/(b.min*60));
+  $('#fill').style.width=pct+'%';
+  document.body.classList.toggle('danger', b.type==='study' && remaining<=120 && remaining>0);
+  document.title = `${fmt(remaining)} · ${b.topic}`;
+}
+
+function tick(){
+  if(paused) return;
+  remaining--;
+  if(remaining===120 && PLAN[i].type==='study') beep(2);
+  if(remaining<=0){ beep(4); next(); return; }
+  render();
+}
+
+function next(){
+  if(i+1>=PLAN.length){ finish(); return; }
+  load(i+1);
+}
+function skip(){ if(!started) return; if(i+1>=PLAN.length){finish();return;} load(i+1); }
+function addTime(m){ remaining+=m*60; render(); }
+function togglePause(){
+  paused=!paused;
+  $('#pausebtn').textContent = paused ? '▶ Resume' : '⏸ Pause';
+}
+function restart(){ if(confirm('Restart the whole night from block 1?')){ clearInterval(timer); start(); } }
+function finish(){
+  clearInterval(timer);
+  $('#topic').textContent='🎉 Done — go to sleep.';
+  $('#clock').textContent='00:00';
+  $('#tasklist').innerHTML='<li>You covered every mock type + every extra topic. Sleep beats one more block.</li>';
+  $('#next').textContent='Exam. You’re ready.';
+  document.title='Done ✓';
+  document.body.classList.remove('danger','brk');
+}
+
+// WebAudio beep (no file needed)
+let actx=null;
+function beep(times){
+  if(muted) return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    for(let k=0;k<times;k++){
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      o.frequency.value=k%2?660:880; o.type='sine';
+      const t=actx.currentTime+k*0.18;
+      g.gain.setValueAtTime(0.001,t);
+      g.gain.exponentialRampToValueAtTime(0.3,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+      o.start(t); o.stop(t+0.17);
+    }
+  }catch(e){}
+}
+function muteToggle(){ muted=!muted; $('#mutebtn').textContent = muted?'🔇 Sound off':'🔊 Sound on'; if(!muted) beep(1); }
+
+function start(){
+  clearInterval(timer);
+  paused=false; started=true;
+  $('#pausebtn').textContent='⏸ Pause';
+  load(0);
+  timer=setInterval(tick,1000);
+}
+function begin(){ $('#start-overlay').classList.add('hide'); start(); }
+
+// keyboard: space=pause, n=skip, m=mute
+document.addEventListener('keydown',e=>{
+  if(!started) return;
+  if(e.code==='Space'){e.preventDefault();togglePause();}
+  if(e.key==='n')skip();
+  if(e.key==='m')muteToggle();
+});
+
+buildSidebar();
+load(0);
+</script>
+</body>
+</html>
